@@ -1,16 +1,15 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.user.model;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
  * TODO Sprint add-controllers.
  */
 @Data
-@AllArgsConstructor
-public class ItemDto {
+public class User {
 
     private Long id;
 
@@ -18,11 +17,8 @@ public class ItemDto {
     @NotNull(message = "name should not be null")
     private String name;
 
-    private String description;
-
-    @NotNull(message = "available should not be null")
-    private Boolean available;
-
-    private Long requestId;
-
+    @NotNull(message = "email should not be null")
+    @NotBlank(message = "email should not be empty")
+    @Email(message = "email should be valid")
+    private String email;
 }
