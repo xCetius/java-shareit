@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.mapper.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.storage.BookingRepository;
-import ru.practicum.shareit.enums.ConfirmationStatus;
+import ru.practicum.shareit.enums.BookingStatus;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -67,7 +67,7 @@ public class ItemService {
                             .findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(
                                     item.getId(),
                                     now,
-                                    ConfirmationStatus.APPROVED
+                                    BookingStatus.APPROVED
                             );
                     lastBookingOpt.ifPresent(booking ->
                             itemDto.setLastBooking(BookingDtoMapper.toBookingShortDto(booking)));
@@ -76,7 +76,7 @@ public class ItemService {
                             .findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
                                     item.getId(),
                                     now,
-                                    ConfirmationStatus.APPROVED);
+                                    BookingStatus.APPROVED);
                     nextBookingOpt.ifPresent(booking ->
                             itemDto.setNextBooking(BookingDtoMapper.toBookingShortDto(booking)));
 

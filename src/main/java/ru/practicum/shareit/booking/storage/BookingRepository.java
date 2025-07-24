@@ -2,7 +2,7 @@ package ru.practicum.shareit.booking.storage;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.enums.ConfirmationStatus;
+import ru.practicum.shareit.enums.BookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,7 +22,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             Long bookerId, LocalDateTime start);
 
     List<Booking> findByBookerIdAndStatusOrderByStartDesc(
-            Long bookerId, ConfirmationStatus status);
+            Long bookerId, BookingStatus status);
 
     List<Booking> findByItemOwnerIdOrderByStartDesc(Long ownerId);
 
@@ -36,16 +36,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             Long ownerId, LocalDateTime start);
 
     List<Booking> findByItemOwnerIdAndStatusOrderByStartDesc(
-            Long ownerId, ConfirmationStatus status);
+            Long ownerId, BookingStatus status);
 
     List<Booking> findByBookerIdAndItemIdAndStatusAndEndBefore(
-            Long userId, Long itemId, ConfirmationStatus ConfirmationStatus, LocalDateTime time);
+            Long userId, Long itemId, BookingStatus ConfirmationStatus, LocalDateTime time);
 
     Optional<Booking> findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(
-            Long itemId, LocalDateTime now, ConfirmationStatus status);
+            Long itemId, LocalDateTime now, BookingStatus status);
 
     Optional<Booking> findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
-            Long itemId, LocalDateTime now, ConfirmationStatus status);
+            Long itemId, LocalDateTime now, BookingStatus status);
 
     boolean existsByItemIdAndBookerIdAndEndBefore(
             Long bookerId, Long itemId, LocalDateTime now);

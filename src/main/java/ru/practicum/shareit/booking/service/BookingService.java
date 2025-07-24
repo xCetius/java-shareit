@@ -8,7 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.mapper.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.storage.BookingRepository;
-import ru.practicum.shareit.enums.ConfirmationStatus;
+import ru.practicum.shareit.enums.BookingStatus;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.OwnerMismatchException;
 import ru.practicum.shareit.exception.ValidationException;
@@ -62,9 +62,9 @@ public class BookingService {
             case "PAST" -> bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(userId, now);
             case "FUTURE" -> bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(userId, now);
             case "WAITING" -> bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
-                    userId, ConfirmationStatus.WAITING);
+                    userId, BookingStatus.WAITING);
             case "REJECTED" -> bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
-                    userId, ConfirmationStatus.REJECTED);
+                    userId, BookingStatus.REJECTED);
             default -> throw new ValidationException("Unknown state: " + state);
         };
 
@@ -86,9 +86,9 @@ public class BookingService {
             case "PAST" -> bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now);
             case "FUTURE" -> bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now);
             case "WAITING" -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
-                    userId, ConfirmationStatus.WAITING);
+                    userId, BookingStatus.WAITING);
             case "REJECTED" -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
-                    userId, ConfirmationStatus.REJECTED);
+                    userId, BookingStatus.REJECTED);
             default -> throw new ValidationException("Unknown state: " + state);
         };
 
@@ -120,7 +120,7 @@ public class BookingService {
         booking.setEnd(bookingRequestDto.getEnd());
         booking.setItem(item);
         booking.setBooker(booker);
-        booking.setStatus(ConfirmationStatus.WAITING);
+        booking.setStatus(BookingStatus.WAITING);
 
         bookingRepository.save(booking);
 
@@ -138,9 +138,9 @@ public class BookingService {
 
         Booking bookingToUpdate = bookingRepository.findById(bookingId).orElseThrow(() -> new NotFoundException("Booking not found with id: " + bookingId));
         if (approved) {
-            bookingToUpdate.setStatus(ConfirmationStatus.APPROVED);
+            bookingToUpdate.setStatus(BookingStatus.APPROVED);
         } else {
-            bookingToUpdate.setStatus(ConfirmationStatus.REJECTED);
+            bookingToUpdate.setStatus(BookingStatus.REJECTED);
         }
 
         return BookingDtoMapper.toBookingDto(bookingToUpdate);

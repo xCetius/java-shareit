@@ -5,7 +5,7 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.shareit.enums.ConfirmationStatus;
+import ru.practicum.shareit.enums.BookingStatus;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.dto.UserDto;
 
@@ -30,5 +30,5 @@ public class BookingDto {
     private UserDto booker;
 
     @NotNull
-    private ConfirmationStatus status;
+    private BookingStatus status;
 }
