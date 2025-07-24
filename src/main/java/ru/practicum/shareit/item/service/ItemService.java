@@ -54,7 +54,6 @@ public class ItemService {
         return item;
     }
 
-    @Transactional(readOnly = true)
     public List<ItemDto> getItemsByUserId(long userId) {
         LocalDateTime now = LocalDateTime.now();
         List<Item> items = itemRepository.findAllByOwnerId(userId);
@@ -120,7 +119,6 @@ public class ItemService {
         return itemRepository.findByNameContainingIgnoreCaseAndAvailableTrue(text).stream().map(ItemDtoMapper::toItemDto).toList();
     }
 
-    @Transactional(readOnly = true)
     public CommentDto addComment(Long itemId, Long userId, CommentDto commentDto) {
 
         if (!bookingRepository.existsByItemIdAndBookerIdAndEndBefore(

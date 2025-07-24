@@ -73,7 +73,6 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<BookingDto> findOwnerBookings(Long userId, String state) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
@@ -98,7 +97,6 @@ public class BookingService {
     }
 
 
-    @Transactional(readOnly = true)
     public BookingDto addBooking(BookingRequestDto bookingRequestDto, long userId) {
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
