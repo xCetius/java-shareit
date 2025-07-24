@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Deprecated
 @Repository("InMemoryItemStorageImpl")
 @Slf4j
 public class InMemoryItemStorageImpl implements ItemStorage {

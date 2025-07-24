@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Deprecated
 @Repository("InMemoryUserStorageImpl")
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {

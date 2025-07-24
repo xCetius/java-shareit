@@ -6,6 +6,7 @@ import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
+@Deprecated
 public interface ItemStorage {
 
     ItemDto getById(long id);

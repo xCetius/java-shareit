@@ -36,6 +36,26 @@ public class ErrorHandler {
 
     }
 
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleConfirmationException(final ValidationException e) {
+        return Map.of("error", "Validation exception",
+                "description", e.getMessage()
+
+        );
+
+    }
+
+    @ExceptionHandler(OwnerMismatchException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, String> handleConfirmationException(final OwnerMismatchException e) {
+        return Map.of("error", "Incorrect owner",
+                "description", e.getMessage()
+
+        );
+
+    }
+
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> handleNotFoundException(final NotFoundException e) {

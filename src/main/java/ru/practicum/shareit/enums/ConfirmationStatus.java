@@ -4,7 +4,7 @@ import ru.practicum.shareit.exception.ConfirmationException;
 
 import java.util.Arrays;
 
-public enum Confirmation {
+public enum ConfirmationStatus {
 
     WAITING("waiting"),
     APPROVED("approved"),
@@ -13,12 +13,12 @@ public enum Confirmation {
 
     private final String paramValue;
 
-    Confirmation(String paramValue) {
+    ConfirmationStatus(String paramValue) {
         this.paramValue = paramValue;
     }
 
-    public static Confirmation fromString(String value) {
-        return Arrays.stream(Confirmation.values())
+    public static ConfirmationStatus fromString(String value) {
+        return Arrays.stream(ConfirmationStatus.values())
                 .filter(e -> e.paramValue.equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new ConfirmationException(

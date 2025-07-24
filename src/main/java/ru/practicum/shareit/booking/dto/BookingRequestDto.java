@@ -5,30 +5,22 @@ import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.shareit.enums.ConfirmationStatus;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.dto.UserDto;
 
 
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
-public class BookingDto {
+public class BookingRequestDto {
 
-    private Long id;
-
+    @NotNull
     @FutureOrPresent
     private LocalDateTime start;
 
+    @NotNull
     @Future
     private LocalDateTime end;
 
-    private ItemDto item;
-
     @NotNull
-    private UserDto booker;
-
-    @NotNull
-    private ConfirmationStatus status;
+    private Long itemId;
 }
