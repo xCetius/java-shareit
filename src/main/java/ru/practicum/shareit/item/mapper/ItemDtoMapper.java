@@ -30,18 +30,4 @@ public class ItemDtoMapper {
         );
     }
 
-//    public static ItemForUserDto toForUserDto(Item item) {
-//        return new ItemForUserDto(
-//                item.getId(),
-//                item.getName(),
-//                item.getDescription(),
-//                item.getAvailable(),
-//                item.getRequest() != null ? item.getRequest().getId() : null,
-//                null,  // lastBooking
-//                null,  // nextBooking
-//                Collections.emptyList()  // comments
-//        );
-//    }
-
-
 }

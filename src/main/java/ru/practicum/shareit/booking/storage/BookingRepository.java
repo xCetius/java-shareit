@@ -6,7 +6,6 @@ import ru.practicum.shareit.enums.BookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -38,11 +37,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByItemOwnerIdAndStatusOrderByStartDesc(
             Long ownerId, BookingStatus status);
 
-    Optional<Booking> findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(
-            Long itemId, LocalDateTime now, BookingStatus status);
-
-    Optional<Booking> findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
-            Long itemId, LocalDateTime now, BookingStatus status);
+    List<Booking> findAllByItemIdInAndStatus(List<Long> itemIds, BookingStatus status);
 
     boolean existsByItemIdAndBookerIdAndEndBefore(
             Long bookerId, Long itemId, LocalDateTime now);

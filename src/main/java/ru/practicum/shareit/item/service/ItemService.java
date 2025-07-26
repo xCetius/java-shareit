@@ -23,8 +23,9 @@ import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,7 +47,6 @@ public class ItemService {
         this.commentRepository = commentRepository;
     }
 
-    @Transactional
     public ItemDto getItem(long id) {
         ItemDto item = itemRepository.findById(id).map(ItemDtoMapper::toItemDto).orElseThrow(() -> new NotFoundException("Item not found with id: " + id));
 
@@ -56,35 +56,54 @@ public class ItemService {
 
     public List<ItemDto> getItemsByUserId(long userId) {
         LocalDateTime now = LocalDateTime.now();
+
         List<Item> items = itemRepository.findAllByOwnerId(userId);
+        if (items.isEmpty()) return Collections.emptyList();
+
+        List<Long> itemIds = items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
+
+        List<Comment> allComments = commentRepository.findByItemIdIn(itemIds);
+        Map<Long, List<Comment>> commentsByItem = allComments.stream()
+                .collect(Collectors.groupingBy(c -> c.getItem().getId()));
+
+        List<Booking> allApproved = bookingRepository.findAllByItemIdInAndStatus(itemIds, BookingStatus.APPROVED);
+
+        Map<Long, Booking> lastBookings = new HashMap<>();
+        Map<Long, Booking> nextBookings = new HashMap<>();
+
+        for (Booking b : allApproved) {
+            Long itemId = b.getItem().getId();
+            if (b.getStart().isBefore(now)) {
+                lastBookings.merge(itemId, b, (oldB, newB) ->
+                        newB.getStart().isAfter(oldB.getStart()) ? newB : oldB);
+            } else {
+                nextBookings.merge(itemId, b, (oldB, newB) ->
+                        newB.getStart().isBefore(oldB.getStart()) ? newB : oldB);
+            }
+        }
 
         return items.stream()
                 .map(item -> {
-                    ItemDto itemDto = ItemDtoMapper.toItemDto(item);
+                    ItemDto dto = ItemDtoMapper.toItemDto(item);
 
-                    Optional<Booking> lastBookingOpt = bookingRepository
-                            .findFirstByItemIdAndStartBeforeAndStatusOrderByStartDesc(
-                                    item.getId(),
-                                    now,
-                                    BookingStatus.APPROVED
-                            );
-                    lastBookingOpt.ifPresent(booking ->
-                            itemDto.setLastBooking(BookingDtoMapper.toBookingShortDto(booking)));
+                    Booking last = lastBookings.get(item.getId());
+                    if (last != null) {
+                        dto.setLastBooking(BookingDtoMapper.toBookingShortDto(last));
+                    }
 
-                    Optional<Booking> nextBookingOpt = bookingRepository
-                            .findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
-                                    item.getId(),
-                                    now,
-                                    BookingStatus.APPROVED);
-                    nextBookingOpt.ifPresent(booking ->
-                            itemDto.setNextBooking(BookingDtoMapper.toBookingShortDto(booking)));
+                    Booking next = nextBookings.get(item.getId());
+                    if (next != null) {
+                        dto.setNextBooking(BookingDtoMapper.toBookingShortDto(next));
+                    }
 
-                    List<Comment> comments = commentRepository.findByItemId(item.getId());
-                    itemDto.setComments(comments.stream()
+                    List<Comment> itemComments = commentsByItem.getOrDefault(item.getId(), Collections.emptyList());
+                    dto.setComments(itemComments.stream()
                             .map(CommentDtoMapper::toCommentDto)
                             .collect(Collectors.toList()));
 
-                    return itemDto;
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }
