@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.mapper.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ItemService {
 
     private final ItemRepository itemRepository;
@@ -36,17 +37,7 @@ public class ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
 
-    @Autowired
-    public ItemService(BookingRepository bookingRepository,
-                       ItemRepository itemRepository,
-                       UserRepository userRepository,
-                       CommentRepository commentRepository) {
-        this.bookingRepository = bookingRepository;
-        this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
-        this.commentRepository = commentRepository;
-    }
-
+    @Transactional(readOnly = true)
     public ItemDto getItem(long id) {
         ItemDto item = itemRepository.findById(id).map(ItemDtoMapper::toItemDto).orElseThrow(() -> new NotFoundException("Item not found with id: " + id));
 
@@ -54,6 +45,7 @@ public class ItemService {
         return item;
     }
 
+    @Transactional(readOnly = true)
     public List<ItemDto> getItemsByUserId(long userId) {
         LocalDateTime now = LocalDateTime.now();
 
@@ -108,6 +100,7 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public Item addItem(Item item, long userId) {
         if (item.getOwner() == null) {
             User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Owner not found with id: " + userId));
@@ -131,6 +124,7 @@ public class ItemService {
         return itemToUpdate;
     }
 
+    @Transactional(readOnly = true)
     public List<ItemDto> search(String text) {
         if (text == null || text.isBlank()) {
             return Collections.emptyList();
@@ -138,6 +132,7 @@ public class ItemService {
         return itemRepository.findByNameContainingIgnoreCaseAndAvailableTrue(text).stream().map(ItemDtoMapper::toItemDto).toList();
     }
 
+    @Transactional
     public CommentDto addComment(Long itemId, Long userId, CommentDto commentDto) {
 
         if (!bookingRepository.existsByItemIdAndBookerIdAndEndBefore(

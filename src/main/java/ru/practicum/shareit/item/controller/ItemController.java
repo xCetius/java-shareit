@@ -2,7 +2,7 @@ package ru.practicum.shareit.item.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,20 +22,14 @@ import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @Validated
 @RequestMapping("/items")
 public class ItemController {
 
-
     private final ItemService itemService;
     private final UserService userService;
-
-    @Autowired
-    public ItemController(ItemService itemService, UserService userService) {
-        this.itemService = itemService;
-        this.userService = userService;
-    }
 
     @GetMapping
     public List<ItemDto> getItemsByUserId(@RequestHeader("X-Sharer-User-Id") @Positive long userId) {

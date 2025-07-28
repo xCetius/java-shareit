@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,15 +21,14 @@ import ru.practicum.shareit.booking.service.BookingService;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/bookings")
 @Validated
 public class BookingController {
+
     private final BookingService bookingService;
 
-    public BookingController(BookingService bookingService) {
-        this.bookingService = bookingService;
-    }
 
     @PostMapping
     public BookingDto createBooking(

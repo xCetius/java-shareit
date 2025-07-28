@@ -1,13 +1,15 @@
 package ru.practicum.shareit.booking.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.mapper.BookingDtoMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.storage.BookingRepository;
+import ru.practicum.shareit.enums.BookingState;
 import ru.practicum.shareit.enums.BookingStatus;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.OwnerMismatchException;
@@ -22,22 +24,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
-    @Autowired
-    public BookingService(BookingRepository bookingRepository,
-                          UserRepository userRepository,
-                          ItemRepository itemRepository) {
-        this.bookingRepository = bookingRepository;
-        this.userRepository = userRepository;
-        this.itemRepository = itemRepository;
-    }
-
+    @Transactional(readOnly = true)
     public BookingDto findBookingById(Long bookingId, Long userId) {
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Booking not found with id: " + bookingId));
 
@@ -49,23 +48,34 @@ public class BookingService {
         return BookingDtoMapper.toBookingDto(booking);
     }
 
+    @Transactional(readOnly = true)
     public List<BookingDto> findUserBookings(Long userId, String state) {
 
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
+        BookingState bookingState;
+        try {
+            bookingState = BookingState.valueOf(state.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Unknown state: " + state);
+        }
+
+        Sort newestFirst = Sort.by(Sort.Direction.DESC, "start");
         LocalDateTime now = LocalDateTime.now();
-        List<Booking> bookings = switch (state.toUpperCase()) {
-            case "ALL" -> bookingRepository.findByBookerIdOrderByStartDesc(userId);
-            case "CURRENT" -> bookingRepository.findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
-                    userId, now, now);
-            case "PAST" -> bookingRepository.findByBookerIdAndEndBeforeOrderByStartDesc(userId, now);
-            case "FUTURE" -> bookingRepository.findByBookerIdAndStartAfterOrderByStartDesc(userId, now);
-            case "WAITING" -> bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
-                    userId, BookingStatus.WAITING);
-            case "REJECTED" -> bookingRepository.findByBookerIdAndStatusOrderByStartDesc(
-                    userId, BookingStatus.REJECTED);
-            default -> throw new ValidationException("Unknown state: " + state);
+
+        List<Booking> bookings = switch (bookingState) {
+            case ALL -> bookingRepository.findByBookerId(userId, newestFirst);
+            case CURRENT -> bookingRepository.findByBookerIdAndStartBeforeAndEndAfter(
+                    userId, now, now, newestFirst);
+            case PAST -> bookingRepository.findByBookerIdAndEndBefore(
+                    userId, now, newestFirst);
+            case FUTURE -> bookingRepository.findByBookerIdAndStartAfter(
+                    userId, now, newestFirst);
+            case WAITING -> bookingRepository.findByBookerIdAndStatus(
+                    userId, BookingStatus.WAITING, newestFirst);
+            case REJECTED -> bookingRepository.findByBookerIdAndStatus(
+                    userId, BookingStatus.REJECTED, newestFirst);
         };
 
         return bookings.stream()
@@ -73,22 +83,31 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<BookingDto> findOwnerBookings(Long userId, String state) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
 
+        BookingState bookingState;
+        try {
+            bookingState = BookingState.valueOf(state.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Unknown state: " + state);
+        }
+
+        Sort newestFirst = Sort.by(Sort.Direction.DESC, "start");
         LocalDateTime now = LocalDateTime.now();
-        List<Booking> bookings = switch (state.toUpperCase()) {
-            case "ALL" -> bookingRepository.findByItemOwnerIdOrderByStartDesc(userId);
-            case "CURRENT" -> bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(
-                    userId, now, now);
-            case "PAST" -> bookingRepository.findByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now);
-            case "FUTURE" -> bookingRepository.findByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now);
-            case "WAITING" -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
-                    userId, BookingStatus.WAITING);
-            case "REJECTED" -> bookingRepository.findByItemOwnerIdAndStatusOrderByStartDesc(
-                    userId, BookingStatus.REJECTED);
-            default -> throw new ValidationException("Unknown state: " + state);
+
+        List<Booking> bookings = switch (bookingState) {
+            case ALL -> bookingRepository.findByItemOwnerId(userId, newestFirst);
+            case CURRENT -> bookingRepository.findByItemOwnerIdAndStartBeforeAndEndAfter(
+                    userId, now, now, newestFirst);
+            case PAST -> bookingRepository.findByItemOwnerIdAndEndBefore(userId, now, newestFirst);
+            case FUTURE -> bookingRepository.findByItemOwnerIdAndStartAfter(userId, now, newestFirst);
+            case WAITING -> bookingRepository.findByItemOwnerIdAndStatus(
+                    userId, BookingStatus.WAITING, newestFirst);
+            case REJECTED -> bookingRepository.findByItemOwnerIdAndStatus(
+                    userId, BookingStatus.REJECTED, newestFirst);
         };
 
         return bookings.stream()
@@ -96,7 +115,7 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
-
+    @Transactional
     public BookingDto addBooking(BookingRequestDto bookingRequestDto, long userId) {
         User booker = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));

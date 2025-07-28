@@ -1,7 +1,7 @@
 package ru.practicum.shareit.user.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,17 +18,13 @@ import ru.practicum.shareit.user.service.UserService;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @Validated
 @RequestMapping(path = "/users")
 public class UserController {
 
-    UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserService userService;
 
     @GetMapping("/{id}")
     public UserDto getUserById(@PathVariable long id) {

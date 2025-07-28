@@ -1,7 +1,7 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -13,24 +13,22 @@ import ru.practicum.shareit.user.storage.UserRepository;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
 
-    @Autowired
-    public UserService(UserRepository userRepository) {
-
-        this.userRepository = userRepository;
-    }
-
+    @Transactional
     public User addUser(User user) {
         return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public UserDto getUser(long userId) {
         return userRepository.findById(userId).map(UserDtoMapper::toUserDto).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> getUsers() {
         return userRepository.findAll().stream().map(UserDtoMapper::toUserDto).toList();
     }
@@ -46,7 +44,7 @@ public class UserService {
         }
         return userToUpdate;
     }
-
+    @Transactional
     public void deleteUser(long userId) {
         userRepository.deleteById(userId);
     }
