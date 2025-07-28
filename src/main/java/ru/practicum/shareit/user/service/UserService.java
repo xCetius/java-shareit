@@ -1,44 +1,53 @@
 package ru.practicum.shareit.user.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserUpdateDto;
 import ru.practicum.shareit.user.mapper.UserDtoMapper;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.storage.UserStorage;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
 
-    @Autowired
-    public UserService(@Qualifier("InMemoryUserStorageImpl") UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
-
+    @Transactional
     public User addUser(User user) {
-        return userStorage.add(user);
+        return userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
     public UserDto getUser(long userId) {
-        return UserDtoMapper.toUserDto(userStorage.getById(userId));
+        return userRepository.findById(userId).map(UserDtoMapper::toUserDto).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> getUsers() {
-        return userStorage.getAll().stream().map(UserDtoMapper::toUserDto).toList();
+        return userRepository.findAll().stream().map(UserDtoMapper::toUserDto).toList();
     }
 
+    @Transactional
     public User updateUser(UserUpdateDto user, long userId) {
-        return userStorage.updateUser(user, userId);
+        User userToUpdate = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        if (user.getName() != null) {
+            userToUpdate.setName(user.getName());
+        }
+        if (user.getEmail() != null) {
+            userToUpdate.setEmail(user.getEmail());
+        }
+        return userToUpdate;
     }
 
+    @Transactional
     public void deleteUser(long userId) {
-        userStorage.delete(userId);
+        userRepository.deleteById(userId);
     }
 
 }

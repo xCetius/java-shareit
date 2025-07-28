@@ -1,68 +1,61 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.booking.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.hibernate.proxy.HibernateProxy;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.enums.BookingStatus;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.List;
-
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "items", schema = "public")
+@Table(name = "bookings")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Item {
+public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    @NotBlank(message = "name should not be empty")
-    private String name;
+    @Column(name = "date_from", nullable = false)
+    private LocalDateTime start;
 
-    @Column(name = "description", nullable = false)
-    @NotBlank(message = "description should not be empty")
-    private String description;
-
-    @Column(name = "available", nullable = false)
-    @NotNull(message = "available should not be empty")
-    private Boolean available;
+    @Column(name = "date_to", nullable = false)
+    private LocalDateTime end;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    private User owner;
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id")
-    private ItemRequest request;
+    @JoinColumn(name = "booker_id", nullable = false)
+    private User booker;
 
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Comment> comments;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private BookingStatus status;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Item)) return false;
+        if (!(o instanceof Booking)) return false;
 
         Class<?> oEffectiveClass = o instanceof HibernateProxy
                 ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass()
@@ -73,8 +66,8 @@ public class Item {
 
         if (!thisEffectiveClass.equals(oEffectiveClass)) return false;
 
-        Item item = (Item) o;
-        return id != null && id.equals(item.id);
+        Booking booking = (Booking) o;
+        return id != null && id.equals(booking.id);
     }
 
     @Override
@@ -86,3 +79,7 @@ public class Item {
                 : getClass().hashCode();
     }
 }
+
+
+
+
